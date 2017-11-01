@@ -30,6 +30,10 @@ export default class App extends Component {
     ]
   };
 
+  _mapReady = () => {
+    this.state.places[0].mark.showCallout();
+  };
+
   render() {
     const { latitude, longitude } = this.state.places[0];
 
@@ -49,9 +53,13 @@ export default class App extends Component {
           zoomEnabled={false}
           showsPointsOfInterest={false}
           showBuildings={false}
+          onMapReady={this._mapReady}
         >
           { this.state.places.map(place => (
             <MapView.Marker
+              ref={mark => place.mark = mark}
+              title={place.title}
+              description={place.description}
               key={place.id}
               coordinate={{
                 latitude: place.latitude,
@@ -70,18 +78,22 @@ export default class App extends Component {
               ? e.nativeEvent.contentOffset.x / Dimensions.get('window').width
               : 0;
 
-            const { latitude, longitude } = this.state.places[place];
+            const { latitude, longitude, mark } = this.state.places[place];
 
             this.mapView.animateToCoordinate({
               latitude,
               longitude
-            });
+            }, 500);
+
+            setTimeout(() => {
+              mark.showCallout();
+            }, 500)
           }}
         >
           { this.state.places.map(place => (
             <View key={place.id} style={styles.place}>
-              <Text>{ place.title }</Text>
-              <Text>{ place.description }</Text>
+              <Text style={styles.title}>{ place.title }</Text>
+              <Text style={styles.description}>{ place.description }</Text>
             </View>
           )) }
         </ScrollView>
@@ -117,5 +129,20 @@ const styles = StyleSheet.create({
     maxHeight: 200,
     backgroundColor: '#FFF',
     marginHorizontal: 20,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    padding: 20,
+  },
+
+  title: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    backgroundColor: 'transparent',
+  },
+
+  description: {
+    color: '#999',
+    fontSize: 12,
+    marginTop: 5,
   },
 });
