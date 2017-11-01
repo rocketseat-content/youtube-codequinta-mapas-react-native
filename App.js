@@ -5,21 +5,33 @@ import MapView from 'react-native-maps';
 
 export default class App extends Component {
   state = {
-    latitude: -27.2106736,
-    longitude: -49.6384809,
+    places: [
+      {
+        id: 1,
+        title: 'Casa do café',
+        description: 'Café quentinho...',
+        latitude: -27.2106710,
+        longitude: -49.6362700,
+      },
+      {
+        id: 2,
+        title: 'RocketSeat',
+        description: 'Programação, empreendedorismo e mindset',
+        latitude: -27.2006710,
+        longitude: -49.6362700,
+      },
+      {
+        id: 3,
+        title: 'Casa do José',
+        description: 'José, tá em casa?',
+        latitude: -27.2006710,
+        longitude: -49.6262700,
+      }
+    ]
   };
 
-  componentDidMount() {
-    setTimeout(() => {
-      this.mapView.animateToCoordinate({
-        latitude: -27.2106710,
-        longitude: -49.6362700
-      }, 500);
-    }, 2000);
-  }
-
   render() {
-    const { latitude, longitude } = this.state;
+    const { latitude, longitude } = this.state.places[0];
 
     return (
       <View style={styles.container}>
@@ -28,8 +40,8 @@ export default class App extends Component {
           initialRegion={{
             latitude,
             longitude,
-            latitudeDelta: 0.0042,
-            longitudeDelta: 0.0031,
+            latitudeDelta: 0.0142,
+            longitudeDelta: 0.0231,
           }}
           style={styles.mapView}
           rotateEnabled={false}
@@ -38,12 +50,15 @@ export default class App extends Component {
           showsPointsOfInterest={false}
           showBuildings={false}
         >
-          <MapView.Marker
-            coordinate={{
-              latitude: -27.2106736,
-              longitude: -49.6384809,
-            }}
-          />
+          { this.state.places.map(place => (
+            <MapView.Marker
+              key={place.id}
+              coordinate={{
+                latitude: place.latitude,
+                longitude: place.longitude,
+              }}
+            />
+          ))}
         </MapView>
         <ScrollView
           style={styles.placesContainer}
@@ -51,12 +66,24 @@ export default class App extends Component {
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={(e) => {
-            console.log(e.nativeEvent.contentOffset.x);
-            console.log(Dimensions.get('window').width);
+            const place = (e.nativeEvent.contentOffset.x > 0)
+              ? e.nativeEvent.contentOffset.x / Dimensions.get('window').width
+              : 0;
+
+            const { latitude, longitude } = this.state.places[place];
+
+            this.mapView.animateToCoordinate({
+              latitude,
+              longitude
+            });
           }}
         >
-          <View style={styles.place}></View>
-          <View style={styles.place}></View>
+          { this.state.places.map(place => (
+            <View key={place.id} style={styles.place}>
+              <Text>{ place.title }</Text>
+              <Text>{ place.description }</Text>
+            </View>
+          )) }
         </ScrollView>
       </View>
     );
